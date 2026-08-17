@@ -1,1 +1,73 @@
+import os
+from pathlib import Path
+from dotenv import load_dotenv
+from groq import Groq
+from pydantic import BaseModel
 
+load_dotenv(Path(__file__).parent.parent / ".env")
+
+my_api_key = os.getenv("GROQ_API_KEY")
+
+if not my_api_key:
+    raise ValueError("GROQ_API_KEY environment variable is not set.")
+
+client = Groq(api_key=my_api_key)
+
+model = "openai/gpt-oss-20b"
+
+class Ticket(BaseModel):
+    name: str
+    phone: str
+    email: str
+    address: str
+    issue: str
+
+schema = Ticket.model_json_schema()
+
+system_prompt = f"""
+Extract the personal information from the ticket strictly based on this schema.
+
+{schema}
+"""
+
+text = "Hello my name is rohan my phone number is 93023 my gmail is abcd@gmail.com my query is iphone is not working my address is in delhi"
+
+message_system = {
+    "role": "system",
+    "content": system_prompt
+}
+
+message = {
+    "role": "user",
+    "content": text
+}
+
+messages = [message_system, message]
+
+response = client.chat.completions.create(
+    model=model,
+    messages=messages,
+    response_format={
+        "type": "json_schema",
+        "json_schema": {
+            "name": "ticket",
+            "strict": True,
+            "schema": schema
+        }
+    }
+)
+
+answer = response.choices[0].message.content
+
+print(answer)
+
+#isko pdthe kaise h
+import json
+raw_json=answer
+data_file=json.loads(raw_json)
+ticket=Ticket( ** data_file)
+
+# inko pass kr sakte hai aage!
+print(ticket.name)
+print(ticket.email)
+print(ticket.issue)
