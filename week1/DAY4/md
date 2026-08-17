@@ -1,1 +1,25 @@
+# Day 4 - Structured Output with Groq and Pydantic
 
+## What I learned
+
+In this task, I used a Groq LLM to extract information from a customer support ticket and return the result in a fixed JSON structure.
+
+The main concepts used are:
+
+- Groq API
+- Environment variables using `.env`
+- Pydantic `BaseModel`
+- JSON Schema
+- Structured output from an LLM
+
+## Pydantic Schema
+
+The expected output is defined using a Pydantic model:
+
+```python
+class Ticket(BaseModel):
+    name: str
+    phone: str
+    email: str
+    address: str
+    issue: str
